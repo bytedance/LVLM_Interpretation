@@ -44,16 +44,16 @@ def eprint(*args, **kwargs):
 
 def get_data(args, row):
     if args.dataset == 'MMVP':
-        photo_id = row['lndex']
+        photo_id = row['index']
         image_path = os.path.join(args.image_folder, f"{photo_id}.jpg")
         image = Image.open(image_path).convert('RGB')
 
         if args.choices:
             opts = row['Options'].split(' ')
-            cur_prompt = f"{row['Question']}\nA. {opts[1]}\nB. {opts[3]}\n"
+            cur_prompt = f"{row.get('Question', row.get('question', 'What is in this image?'))}\nA. {opts[1]}\nB. {opts[3]}\n"
             qs = cur_prompt + "Answer only with the option's letter A or B from the given choices directly."
         else:
-            qs = row['Question']
+            qs = row.get('Question', row.get('question', 'What is in this image?'))
             cur_prompt = qs
     elif args.dataset == 'cvbench':
         image_path = os.path.join(args.image_folder, row["filename"])

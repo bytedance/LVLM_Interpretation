@@ -11,7 +11,6 @@ def init_args():
         '--model',
         metavar='M',
         type=str,
-        choices=['llava', 'cambrian', 'llava_next', 'mgm'],
         default='llava',
         help='The model to use for making predictions.')
     
@@ -48,14 +47,12 @@ def init_args():
     parser.add_argument(
         '--method',
         type=str,
-        choices=['iGOS+', 'iGOS++'],
         default='iGOS+'
     )
 
     parser.add_argument(
         '--opt',
         type=str,
-        choices=['LS', 'NAG'],
         default='NAG',
         help='The optimization algorithm.'
     )
