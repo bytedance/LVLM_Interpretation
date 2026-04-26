@@ -96,7 +96,7 @@ def gen_explanations_llava(model, image_processor, data, args):
             blur_tensor = blur_tensor.unsqueeze(0).detach().half().cuda()
             conv = conv_vicuna_v1.copy()
         #print('original size:', image.size, 'processed:', image_tensor.shape)
-        #image_tensor = image_processor.preprocess(image, return_tensors='pt')['pixel_values'][0]
+        #image_tensor = image_processor.preprocess(image, return_tensors='pt')['pixel_values'][0].to(device='cuda', dtype=torch.float16)
 
         qs = DEFAULT_IMAGE_TOKEN + '\n' + qs
         conv.append_message(conv.roles[0], qs)
@@ -104,6 +104,7 @@ def gen_explanations_llava(model, image_processor, data, args):
         prompt = conv.get_prompt()
         input_ids = tokenizer_image_token(prompt, tokenizer, IMAGE_TOKEN_INDEX, return_tensors='pt').unsqueeze(0).to(model.device)
         
+        if input_ids is not None: input_ids = input_ids.to('cuda')
         output_ids = generate(args, model, input_ids, image_tensor, image_size)
         output_text = tokenizer.decode(output_ids[0])
         # output_ids_blur = generate(args, model, input_ids, blur_tensor, image_size)
@@ -221,7 +222,9 @@ if __name__ == "__main__":
     elif args.model == 'llava':
         model_path = 'liuhaotian/llava-v1.5-7b'
         model_name = get_model_name_from_path(model_path)
-        tokenizer, model, image_processor, context_len = load_pretrained_model(model_path, args.model_base, model_name)
+        tokenizer, model, image_processor, context_len = load_pretrained_model(model_path, args.model_base, model_name, load_4bit=True)
+        for name, buffer in model.named_buffers():
+            buffer.data = buffer.data.to('cuda')
     elif args.model == 'llava_next':
         model_path = "lmms-lab/llava-onevision-qwen2-72b-ov"
         model_name = get_model_name_from_path(model_path)
